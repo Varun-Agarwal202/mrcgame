@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency Response Hero 🚨</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
+
+:root {
+  --red: #ff2d55;
+  --orange: #ff9500;
+  --yellow: #ffd60a;
+  --green: #30d158;
+  --blue: #0a84ff;
+  --teal: #5ac8fa;
+  --white: #ffffff;
+  --ink: #1a1a2e;
+  --ink2: #16213e;
+  --panel: #0f3460;
+  --card: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Comic dot pattern bg */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── SCREENS ── */
+.screen { display:none; position:absolute; inset:0; z-index:1; overflow:hidden; }
+.screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+/* ══════════════════════════════
+   INTRO SCREEN
+══════════════════════════════ */
+#intro {
+  background: linear-gradient(160deg, #0f3460 0%, #1a1a2e 60%);
+  gap: 0;
+  padding: 1rem;
+}
+
+.intro-badge {
+  background: var(--red);
+  color: white;
+  font-family: 'Bangers', cursive;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  padding: 0.3rem 1.2rem;
+  border-radius: 30px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 20px rgba(255,45,85,0.5);
+  animation: badge-pulse 2s infinite;
+}
+
+.intro-title {
+  font-family: 'Bangers', cursive;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.95;
+  text-align: center;
+  text-shadow: 6px 6px 0 var(--red), 12px 12px 0 rgba(255,45,85,0.2);
+  margin-bottom: 0.5rem;
+  animation: title-drop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.intro-title .line2 { color: var(--yellow); text-shadow: 4px 4px 0 var(--orange), 8px 8px 0 rgba(255,149,0,0.2); }
+
+.intro-sub {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+.scenario-previews {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.prev-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 0.8rem 1.2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 100px;
+  backdrop-filter: blur(10px);
+  animation: float-card 3s ease-in-out infinite;
+}
+.prev-card:nth-child(2) { animation-delay: 0.5s; }
+.prev-card:nth-child(3) { animation-delay: 1s; }
+.prev-card:nth-child(4) { animation-delay: 1.5s; }
+.prev-card .pc-emoji { font-size: 2rem; display:block; margin-bottom:0.3rem; }
+.prev-card .pc-label { color: rgba(255,255,255,0.7); }
+
+.intro-btn {
+  font-family: 'Bangers', cursive;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  padding: 1rem 3.5rem;
+  background: linear-gradient(135deg, var(--red), var(--orange));
+  color: white;
+  border: none;
+  border-radius: 60px;
+  cursor: pointer;
+  box-shadow: 0 8px 0 #c0001c, 0 12px 30px rgba(255,45,85,0.4);
+  transition: transform 0.1s, box-shadow 0.1s;
+  position: relative;
+}
+.intro-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 0 #c0001c, 0 16px 40px rgba(255,45,85,0.5); }
+.intro-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #c0001c; }
+
+/* Stars bg decoration */
+.star-field { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+.star {
+  position:absolute; width:4px; height:4px; border-radius:50%;
+  background:white; opacity:0.4;
+  animation: twinkle var(--d, 3s) infinite ease-in-out;
+}
+
+/* ══════════════════════════════
+   SCENARIO SELECT
+══════════════════════════════ */
+#scenario-select {
+  background: linear-gradient(160deg, #0f3460 0%, #1a1a2e 60%);
+  justify-content: flex-start;
+  padding: 1.5rem;
+  overflow-y: auto;
+  gap: 1.5rem;
+}
+
+.ss-header { text-align:center; }
+.ss-header h2 {
+  font-family:'Bangers',cursive;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  letter-spacing: 2px;
+}
+.ss-header p { color:rgba(255,255,255,0.5); font-weight:700; font-size:0.9rem; margin-top:0.3rem; }
+
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 860px;
+}
+
+.scenario-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+.scenario-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:4px;
+  background: var(--accent, var(--red));
+  border-radius: 20px 20px 0 0;
+}
+.scenario-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: var(--accent, var(--red));
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--accent, var(--red));
+}
+.scenario-card.locked { opacity:0.4; cursor:not-allowed; filter:grayscale(0.5); }
+.scenario-card.locked:hover { transform:none; }
+
+.sc-emoji { font-size:2.8rem; margin-bottom:0.8rem; display:block; }
+.sc-name { font-family:'Bangers',cursive; font-size:1.4rem; letter-spacing:1px; margin-bottom:0.3rem; }
+.sc-desc { font-size:0.82rem; color:rgba(255,255,255,0.55); font-weight:600; line-height:1.5; }
+.sc-difficulty {
+  display:inline-flex; align-items:center; gap:0.3rem;
+  margin-top:0.8rem;
+  font-size:0.75rem; font-weight:800;
+  padding:0.2rem 0.7rem; border-radius:20px;
+  background:rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.7);
+}
+.lock-badge {
+  position:absolute; top:0.8rem; right:0.8rem;
+  background:rgba(0,0,0,0.5); border-radius:50%;
+  width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.9rem;
+}
+
+/* ══════════════════════════════
+   GAME SCREEN
+══════════════════════════════ */
+#game {
+  background: var(--ink2);
+  padding: 0;
+  justify-content: flex-start;
+}
+
+/* Top HUD */
+.hud {
+  width:100%; padding:0.8rem 1.5rem;
+  display:flex; align-items:center; gap:1rem;
+  background:rgba(0,0,0,0.4); backdrop-filter:blur(10px);
+  border-bottom:2px solid rgba(255,255,255,0.08);
+  z-index:10; flex-shrink:0;
+}
+.hud-scenario {
+  font-family:'Bangers',cursive; font-size:1.3rem; letter-spacing:1px;
+  flex:1;
+}
+.hud-lives { display:flex; gap:0.3rem; font-size:1.3rem; }
+.hud-score {
+  font-family:'Bangers',cursive; font-size:1.4rem;
+  color:var(--yellow);
+  background:rgba(255,214,10,0.1);
+  border:1px solid rgba(255,214,10,0.3);
+  padding:0.2rem 0.8rem; border-radius:20px;
+}
+
+/* Timer bar */
+.timer-wrap { width:100%; height:8px; background:rgba(255,255,255,0.1); flex-shrink:0; }
+.timer-fill {
+  height:100%;
+  background:linear-gradient(90deg, var(--green), var(--yellow), var(--red));
+  background-size:300% 100%;
+  transition:width 0.1s linear;
+  border-radius:0 4px 4px 0;
+}
+.timer-fill.urgent { animation:urgent-flash 0.4s infinite; }
+
+/* Main game layout */
+.game-body {
+  flex:1; display:flex; overflow:hidden; width:100%;
+}
+
+/* Scene panel */
+.scene-panel {
+  flex:1; padding:1.5rem;
+  display:flex; flex-direction:column; gap:1rem;
+  overflow-y:auto;
+}
+
+.phase-badge {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+  border-radius:20px; padding:0.3rem 1rem;
+  font-size:0.78rem; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+  color:rgba(255,255,255,0.7); align-self:flex-start;
+}
+.phase-dot { width:8px; height:8px; border-radius:50%; background:var(--dot-color, var(--red)); animation:pulse-dot 1s infinite; }
+
+.scene-card {
+  background: linear-gradient(135deg, var(--scene-a, #0f3460), var(--scene-b, #16213e));
+  border:2px solid var(--border);
+  border-radius:20px; padding:1.5rem;
+  position:relative; overflow:hidden;
+}
+.scene-card::after {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at top right, rgba(255,255,255,0.05), transparent 60%);
+  pointer-events:none;
+}
+.scene-emoji { font-size:3.5rem; margin-bottom:0.8rem; display:block; }
+.scene-title { font-family:'Bangers',cursive; font-size:1.6rem; letter-spacing:1px; margin-bottom:0.5rem; }
+.scene-desc { font-size:0.95rem; font-weight:600; color:rgba(255,255,255,0.8); line-height:1.6; }
+
+.vital-signs {
+  display:flex; gap:0.8rem; flex-wrap:wrap;
+}
+.vital {
+  background:rgba(0,0,0,0.3); border-radius:12px;
+  padding:0.6rem 1rem;
+  border:1px solid rgba(255,255,255,0.1);
+  font-size:0.82rem; font-weight:700;
+}
+.vital-label { color:rgba(255,255,255,0.5); font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.2rem; }
+.vital-val { font-size:1.1rem; font-weight:800; }
+.vital-val.critical { color:var(--red); animation:flash-text 0.8s infinite; }
+.vital-val.warning { color:var(--yellow); }
+.vital-val.ok { color:var(--green); }
+
+/* Step procedure */
+.procedure-steps {
+  display:flex; flex-direction:column; gap:0.5rem;
+}
+.step-item {
+  display:flex; align-items:center; gap:0.8rem;
+  background:rgba(255,255,255,0.05); border-radius:12px;
+  padding:0.7rem 1rem;
+  border:1px solid rgba(255,255,255,0.08);
+  font-size:0.9rem; font-weight:700;
+  transition:all 0.3s;
+}
+.step-item.done { background:rgba(48,209,88,0.15); border-color:rgba(48,209,88,0.4); color:var(--green); }
+.step-item.active { background:rgba(255,149,0,0.15); border-color:rgba(255,149,0,0.6); animation:active-step 1s infinite; }
+.step-item.pending { opacity:0.4; }
+.step-num { width:26px; height:26px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
+.step-item.done .step-num { background:var(--green); color:#000; }
+.step-item.active .step-num { background:var(--orange); color:#000; }
+
+/* Right side: question + answers */
+.question-panel {
+  width: 380px; flex-shrink:0;
+  display:flex; flex-direction:column; gap:1rem;
+  padding:1.5rem; border-left:2px solid rgba(255,255,255,0.08);
+  overflow-y:auto; background:rgba(0,0,0,0.2);
+}
+
+.q-type-tag {
+  font-family:'Bangers',cursive; font-size:1rem; letter-spacing:2px;
+  color:var(--tag-color, var(--teal));
+}
+
+.question-box {
+  background:rgba(255,255,255,0.06);
+  border:2px solid rgba(255,255,255,0.12);
+  border-radius:16px; padding:1.2rem;
+  font-size:1.1rem; font-weight:700; line-height:1.5;
+}
+.question-box .q-hint {
+  font-size:0.8rem; color:rgba(255,255,255,0.4); font-weight:600;
+  margin-top:0.5rem;
+}
+
+.answers-col { display:flex; flex-direction:column; gap:0.6rem; }
+
+.ans-btn {
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.12);
+  border-radius:14px; padding:0.9rem 1.1rem;
+  color:white; font-family:'Nunito',sans-serif;
+  font-size:0.95rem; font-weight:700;
+  cursor:pointer; text-align:left; line-height:1.4;
+  transition:all 0.2s; display:flex; align-items:center; gap:0.7rem;
+}
+.ans-btn:hover:not(:disabled) {
+  background:rgba(10,132,255,0.2);
+  border-color:var(--blue);
+  transform:translateX(4px);
+}
+.ans-btn.selected-correct {
+  background:rgba(48,209,88,0.2) !important;
+  border-color:var(--green) !important;
+  color:var(--green) !important;
+}
+.ans-btn.selected-wrong {
+  background:rgba(255,45,85,0.2) !important;
+  border-color:var(--red) !important;
+  color:var(--red) !important;
+}
+.ans-btn.reveal-correct {
+  background:rgba(48,209,88,0.1) !important;
+  border-color:rgba(48,209,88,0.5) !important;
+  color:rgba(48,209,88,0.8) !important;
+}
+.ans-btn:disabled { cursor:default; }
+.ans-letter {
+  width:28px; height:28px; border-radius:8px;
+  background:rgba(255,255,255,0.1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:800; flex-shrink:0;
+}
+
+.feedback-box {
+  border-radius:14px; padding:1rem; font-size:0.9rem; font-weight:700;
+  line-height:1.5; display:none;
+}
+.feedback-box.show { display:block; animation:pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+.feedback-box.fb-correct { background:rgba(48,209,88,0.15); border:2px solid rgba(48,209,88,0.4); color:var(--green); }
+.feedback-box.fb-wrong { background:rgba(255,45,85,0.15); border:2px solid rgba(255,45,85,0.4); color:#ff6b6b; }
+
+.next-btn {
+  font-family:'Bangers',cursive; font-size:1.3rem; letter-spacing:1px;
+  padding:0.8rem; background:linear-gradient(135deg,var(--blue),var(--teal));
+  color:white; border:none; border-radius:14px; cursor:pointer;
+  box-shadow:0 4px 0 #0056cc;
+  transition:all 0.1s; display:none;
+}
+.next-btn:hover { transform:translateY(-2px); box-shadow:0 6px 0 #0056cc; }
+.next-btn:active { transform:translateY(2px); box-shadow:0 2px 0 #0056cc; }
+.next-btn.show { display:block; animation:pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* Progress dots */
+.progress-dots { display:flex; gap:0.4rem; flex-wrap:wrap; }
+.prog-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.15); transition:all 0.3s; }
+.prog-dot.done-correct { background:var(--green); }
+.prog-dot.done-wrong { background:var(--red); }
+.prog-dot.current { background:var(--yellow); animation:pulse-dot 0.8s infinite; }
+
+/* ══════════════════════════════
+   RESULTS SCREEN
+══════════════════════════════ */
+#results {
+  background:linear-gradient(160deg, #0f3460 0%, #1a1a2e 60%);
+  padding:2rem; gap:1.5rem; overflow-y:auto;
+  justify-content:flex-start; padding-top:3rem;
+}
+
+.result-hero { text-align:center; }
+.result-emoji { font-size:5rem; animation:bounce-in 0.6s cubic-bezier(0.34,1.56,0.64,1) both; display:block; }
+.result-grade {
+  font-family:'Bangers',cursive;
+  font-size:clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing:2px;
+  animation:title-drop 0.6s 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.result-sub { color:rgba(255,255,255,0.5); font-weight:700; font-size:0.95rem; margin-top:0.3rem; }
+
+.result-stats {
+  display:flex; gap:1rem; flex-wrap:wrap; justify-content:center;
+}
+.rs-card {
+  background:var(--card); border:2px solid var(--border);
+  border-radius:16px; padding:1rem 1.5rem;
+  text-align:center; min-width:120px;
+  backdrop-filter:blur(10px);
+}
+.rs-val { font-family:'Bangers',cursive; font-size:2.5rem; }
+.rs-label { font-size:0.78rem; font-weight:800; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:1px; }
+
+.review-section { width:100%; max-width:640px; }
+.review-section h3 { font-family:'Bangers',cursive; font-size:1.4rem; letter-spacing:1px; margin-bottom:0.8rem; }
+
+.review-list { display:flex; flex-direction:column; gap:0.6rem; max-height:30vh; overflow-y:auto; }
+.rv-item {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:0.8rem 1rem;
+  display:flex; align-items:flex-start; gap:0.8rem;
+  font-size:0.85rem;
+}
+.rv-icon { font-size:1.2rem; flex-shrink:0; }
+.rv-q { font-weight:700; }
+.rv-a { color:rgba(255,255,255,0.5); font-size:0.8rem; margin-top:0.2rem; }
+.rv-a.correct { color:var(--green); }
+.rv-a.wrong { color:var(--red); }
+
+.result-btns { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+.rbtn {
+  font-family:'Bangers',cursive; font-size:1.3rem; letter-spacing:1px;
+  padding:0.8rem 2rem; border:none; border-radius:40px; cursor:pointer;
+  transition:all 0.2s;
+}
+.rbtn-primary { background:linear-gradient(135deg,var(--red),var(--orange)); color:white; box-shadow:0 6px 0 #c0001c; }
+.rbtn-primary:hover { transform:translateY(-3px); }
+.rbtn-secondary { background:rgba(255,255,255,0.1); color:white; border:2px solid rgba(255,255,255,0.2); }
+.rbtn-secondary:hover { background:rgba(255,255,255,0.2); }
+
+/* Flash overlay for correct/wrong */
+#flash-overlay {
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  opacity:0; transition:opacity 0.1s;
+}
+#flash-overlay.flash-green { background:rgba(48,209,88,0.15); }
+#flash-overlay.flash-red { background:rgba(255,45,85,0.2); }
+
+/* XP popup */
+.xp-popup {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'Bangers',cursive; font-size:3rem; letter-spacing:3px;
+  pointer-events:none; z-index:1000;
+  animation:xp-fly 1s ease-out forwards;
+}
+.xp-popup.pos { color:var(--green); text-shadow:0 0 20px rgba(48,209,88,0.8); }
+.xp-popup.neg { color:var(--red); text-shadow:0 0 20px rgba(255,45,85,0.8); }
+
+/* ── ANIMATIONS ── */
+@keyframes badge-pulse { 0%,100%{box-shadow:0 4px 20px rgba(255,45,85,0.5)} 50%{box-shadow:0 4px 40px rgba(255,45,85,0.9)} }
+@keyframes title-drop { from{opacity:0;transform:translateY(-30px) scale(0.9)} to{opacity:1;transform:none} }
+@keyframes float-card { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:0.7} }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+@keyframes active-step { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 15px rgba(255,149,0,0.4)} }
+@keyframes flash-text { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes urgent-flash { 0%,100%{opacity:1} 50%{opacity:0.5} }
+@keyframes pop-in { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+@keyframes bounce-in { from{opacity:0;transform:scale(0.3)} 60%{transform:scale(1.1)} to{opacity:1;transform:scale(1)} }
+@keyframes xp-fly { 0%{opacity:1;transform:translate(-50%,-50%)} 100%{opacity:0;transform:translate(-50%,-150%)} }
+
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.15); border-radius:2px; }
+</style>
+</head>
+<body>
+<div id="flash-overlay"></div>
+
+<!-- ════ INTRO ════ -->
+<div id="intro" class="screen active">
+  <div class="star-field" id="stars"></div>
+  <div class="intro-badge">🚨 Emergency Training Simulator</div>
+  <h1 class="intro-title">
+    <div>FIRST</div>
+    <div class="line2">RESPONDER</div>
+  </h1>
+  <p class="intro-sub">Real scenarios. Fast decisions. Lives on the line.<br>Can you handle the pressure?</p>
+  <div class="scenario-previews">
+    <div class="prev-card"><span class="pc-emoji">🫀</span><span class="pc-label">Cardiac Arrest</span></div>
+    <div class="prev-card"><span class="pc-emoji">🔥</span><span class="pc-label">Burns & Fire</span></div>
+    <div class="prev-card"><span class="pc-emoji">🩸</span><span class="pc-label">Bleeding</span></div>
+    <div class="prev-card"><span class="pc-emoji">🧠</span><span class="pc-label">Stroke</span></div>
+  </div>
+  <button class="intro-btn" onclick="showScenarioSelect()">RESPOND NOW →</button>
+</div>
+
+<!-- ════ SCENARIO SELECT ════ -->
+<div id="scenario-select" class="screen">
+  <div class="ss-header">
+    <h2>🚑 CHOOSE YOUR MISSION</h2>
+    <p>Each scenario tests different emergency skills</p>
+  </div>
+  <div class="scenarios-grid" id="scenarios-grid"></div>
+</div>
+
+<!-- ════ GAME ════ -->
+<div id="game" class="screen">
+  <div class="hud">
+    <div class="hud-scenario" id="hud-scenario">Loading...</div>
+    <div class="hud-lives" id="hud-lives"></div>
+    <div class="hud-score">⭐ <span id="hud-score">0</span></div>
+  </div>
+  <div class="timer-wrap"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+
+  <div class="game-body">
+    <!-- Scene -->
+    <div class="scene-panel">
+      <div class="phase-badge">
+        <div class="phase-dot" id="phase-dot" style="--dot-color:var(--red)"></div>
+        <span id="phase-label">ASSESSING SCENE</span>
+      </div>
+      <div class="scene-card" id="scene-card">
+        <span class="scene-emoji" id="scene-emoji">🚨</span>
+        <div class="scene-title" id="scene-title">Loading scene...</div>
+        <div class="scene-desc" id="scene-desc">...</div>
+      </div>
+      <div class="vital-signs" id="vital-signs"></div>
+      <div class="procedure-steps" id="procedure-steps"></div>
+    </div>
+
+    <!-- Question panel -->
+    <div class="question-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="q-type-tag" id="q-type-tag">KNOWLEDGE CHECK</div>
+        <div class="progress-dots" id="progress-dots"></div>
+      </div>
+      <div class="question-box">
+        <div id="q-text">Loading...</div>
+        <div class="q-hint" id="q-hint"></div>
+      </div>
+      <div class="answers-col" id="answers-col"></div>
+      <div class="feedback-box" id="feedback-box"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQuestion()">NEXT STEP →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ RESULTS ════ -->
+<div id="results" class="screen">
+  <div class="result-hero">
+    <span class="result-emoji" id="result-emoji">🏆</span>
+    <div class="result-grade" id="result-grade">MISSION COMPLETE</div>
+    <div class="result-sub" id="result-sub">You saved the day!</div>
+  </div>
+  <div class="result-stats">
+    <div class="rs-card"><div class="rs-val" id="rs-score" style="color:var(--yellow)">0</div><div class="rs-label">Score</div></div>
+    <div class="rs-card"><div class="rs-val" id="rs-correct" style="color:var(--green)">0</div><div class="rs-label">Correct</div></div>
+    <div class="rs-card"><div class="rs-val" id="rs-time" style="color:var(--teal)">0s</div><div class="rs-label">Avg Time</div></div>
+    <div class="rs-card"><div class="rs-val" id="rs-streak" style="color:var(--orange)">0🔥</div><div class="rs-label">Best Streak</div></div>
+  </div>
+  <div class="review-section">
+    <h3>📋 MISSION DEBRIEF</h3>
+    <div class="review-list" id="review-list"></div>
+  </div>
+  <div class="result-btns">
+    <button class="rbtn rbtn-primary" onclick="showScenarioSelect()">NEW MISSION 🚑</button>
+    <button class="rbtn rbtn-secondary" onclick="showIntro()">🏠 HOME</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const SCENARIOS = [
+  {
+    id:'cardiac',
+    name:'Cardiac Arrest',
+    emoji:'🫀',
+    desc:'A man collapses in a shopping mall. No pulse, not breathing.',
+    accent:'#ff2d55',
+    sceneA:'#3a0018', sceneB:'#1a0008',
+    difficulty:'Medium', diffColor:'var(--orange)',
+    steps:['Ensure scene safety','Call 911','Check responsiveness','Check pulse & breathing','Start CPR','Use AED when available','Continue until help arrives'],
+    questions:[
+      { phase:'SCENE SAFETY', phaseColor:'var(--teal)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'🛍️', title:'Shopping Mall Collapse', desc:'A 55-year-old man suddenly collapses near a food court. Bystanders are panicking around him.', vitals:[{l:'Pulse',v:'NONE',s:'critical'},{l:'Breathing',v:'ABSENT',s:'critical'},{l:'Consciousness',v:'UNRESPONSIVE',s:'critical'}]},
+        q:'Before rushing to help, what is the FIRST thing you should do?',
+        answers:['Drop everything and begin chest compressions right away — every second counts','Quickly look around and make sure nothing in the environment could put you at risk too','Loudly ask the crowd to clear out so you have more room to work','Kneel beside him and start checking his breathing and pulse first'],
+        correct:1, step:0,
+        fact:'Scene safety FIRST! If the scene is dangerous (gas leak, traffic, live wires) and you rush in, you become a victim too. A dead responder helps no one.'
+      },
+      { phase:'CALLING FOR HELP', phaseColor:'var(--blue)', type:'CRITICAL DECISION',
+        scene:{emoji:'📱', title:'Get Help Fast', desc:'The scene is safe. The man is unresponsive and not breathing normally. You need to act fast.',vitals:[{l:'Pulse',v:'NONE',s:'critical'},{l:'Time',v:'0:30',s:'warning'}]},
+        q:'What should you call and what should you ask bystanders to find?',
+        answers:['Dial emergency services while also directing someone nearby to locate a defibrillator device','Find the mall\'s information desk and have them page for a doctor over the intercom','Get compressions started yourself first, then rely on someone else to sort out the calls','Ring his family to inform them, then call 911 once you know his medical history'],
+        correct:0, step:1,
+        fact:'Call 911 AND send someone for an AED simultaneously. Every minute without defibrillation reduces survival by 7-10%. AEDs are in most public buildings!'
+      },
+      { phase:'CPR TECHNIQUE', phaseColor:'var(--red)', type:'PROCEDURE CHECK',
+        scene:{emoji:'🫀', title:'Starting Compressions', desc:'You\'ve confirmed no pulse. 911 is called. Time to perform CPR. The man is on the floor.',vitals:[{l:'Time Since Collapse',v:'~1 MIN',s:'warning'},{l:'CPR Status',v:'NOT STARTED',s:'critical'}]},
+        q:'What is the correct CPR compression rate per minute?',
+        answers:['Somewhere between 40 and 60 — slow and deliberate so each compression is thorough','Around 80 to 100, matching a brisk walking pace to keep it manageable','Between 100 and 120, fast enough to mimic a normal heart rhythm effectively','Above 150, as fast as physically possible to maximize the number of compressions'],
+        correct:2, step:2,
+        fact:'100–120 compressions per minute is optimal — roughly to the beat of "Stayin\' Alive" by the Bee Gees. Too slow = not enough blood flow. Too fast = ineffective.'
+      },
+      { phase:'CPR DEPTH', phaseColor:'var(--red)', type:'TECHNIQUE CHECK',
+        scene:{emoji:'💪', title:'Compression Quality Matters', desc:'You\'re doing compressions but quality matters as much as speed. Proper depth ensures blood actually moves.',vitals:[{l:'Compressions',v:'IN PROGRESS',s:'warning'},{l:'Depth',v:'UNKNOWN',s:'warning'}]},
+        q:'How deep should adult CPR chest compressions be?',
+        answers:['About one inch deep — you want to be firm but avoid causing any unnecessary injury','A minimum of two inches down into the chest to actually move blood through the heart','Around four inches or more since the chest needs major compression to be effective','Push as far down as your strength allows — deeper is always safer than too shallow'],
+        correct:1, step:2,
+        fact:'At least 2 inches (5 cm) but no more than 2.4 inches. Too shallow = no blood moves. Too deep = rib/organ damage. Allow FULL chest recoil between compressions!'
+      },
+      { phase:'AED USE', phaseColor:'var(--yellow)', type:'EQUIPMENT CHECK',
+        scene:{emoji:'⚡', title:'AED Arrives!', desc:'A bystander brings an AED. You\'ve been doing CPR for 2 minutes. This device could save his life.',vitals:[{l:'CPR',v:'ONGOING',s:'warning'},{l:'AED',v:'AVAILABLE',s:'ok'}]},
+        q:'When the AED says "Analyzing rhythm," what must everyone do?',
+        answers:['Keep doing compressions at a steady pace so the heart rhythm stays active during analysis','Make sure nobody is in contact with the patient\'s body while the device does its work','Deliver one rescue breath so the device can measure oxygen levels at the same time','Hit the shock button the moment the screen lights up — don\'t wait for the full prompt'],
+        correct:1, step:5,
+        fact:'CLEAR! Everyone must step away. If anyone touches the patient during analysis or shock delivery, the reading will be inaccurate AND they could be shocked too!'
+      },
+      { phase:'RESCUE BREATHING', phaseColor:'var(--teal)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'😮‍💨', title:'CPR Ratio', desc:'The AED shocked once and advised to resume CPR. Keep going until EMS arrives.',vitals:[{l:'AED',v:'SHOCK DELIVERED',s:'ok'},{l:'Resume CPR',v:'NOW',s:'critical'}]},
+        q:'What is the correct compression-to-breath ratio for adult CPR?',
+        answers:['Fifteen compressions followed by two breaths, repeating that cycle continuously','Thirty compressions then two rescue breaths before starting the cycle again','Thirty compressions to one breath, alternating as fast as you can manage','Ten compressions between each breath to keep the rhythm slow and controlled'],
+        correct:1, step:2,
+        fact:'30 compressions to 2 breaths for adults with 2 rescuers, OR continuous compressions if untrained. Hands-Only CPR is still effective if you\'re not trained in rescue breathing!'
+      },
+      { phase:'HANDOFF', phaseColor:'var(--green)', type:'CRITICAL DECISION',
+        scene:{emoji:'🚑', title:'EMS Arrives!', desc:'Paramedics arrive after 6 minutes. You\'ve been doing CPR continuously. You\'re exhausted.',vitals:[{l:'CPR Duration',v:'6 MIN',s:'warning'},{l:'EMS',v:'ON SCENE',s:'ok'}]},
+        q:'When EMS arrives and takes over, what should you tell them?',
+        answers:['Step aside quietly — paramedics are trained professionals who will assess everything themselves','Walk them through what happened: when he collapsed, what you did, and how the AED was used','Let yourself rest — you\'ve done enough and the medics don\'t need a civilian\'s account','Give them just his name if you caught it, since personal details are most useful to them'],
+        correct:1, step:6,
+        fact:'Give EMS a full handoff: time of collapse, number of CPR cycles, AED shocks delivered, any changes in the patient. This info directly impacts their treatment decisions!'
+      }
+    ]
+  },
+  {
+    id:'choking',
+    name:'Choking Emergency',
+    emoji:'😮',
+    desc:'A child is choking at a restaurant. She can\'t breathe or speak.',
+    accent:'#ff9500',
+    sceneA:'#3a1a00', sceneB:'#1a0d00',
+    difficulty:'Easy', diffColor:'var(--green)',
+    steps:['Identify choking','Confirm complete obstruction','Perform Heimlich maneuver','Call 911 if unconscious','Begin CPR if needed'],
+    questions:[
+      { phase:'IDENTIFY', phaseColor:'var(--yellow)', type:'ASSESSMENT',
+        scene:{emoji:'🍽️', title:'Restaurant Emergency', desc:'An 8-year-old girl at the next table suddenly grabs her throat and turns red. She cannot speak or cough.',vitals:[{l:'Breathing',v:'OBSTRUCTED',s:'critical'},{l:'Consciousness',v:'ALERT',s:'ok'}]},
+        q:'What sign confirms a COMPLETE airway obstruction vs a partial one?',
+        answers:['They are making loud coughing sounds and appear able to force some air through','They are unable to make any sound, move air, or produce any kind of cough at all','Their face has taken on a reddish flush and they look visibly uncomfortable','They\'re clutching at their throat but still seem to be breathing in small amounts'],
+        correct:1, step:0,
+        fact:'A forceful cough means partial obstruction — encourage them to keep coughing! Complete obstruction = cannot speak, cough, or breathe. THIS is when you act immediately.'
+      },
+      { phase:'INTERVENTION', phaseColor:'var(--red)', type:'PROCEDURE CHECK',
+        scene:{emoji:'🤲', title:'Perform Heimlich', desc:'She cannot breathe at all. Her lips are turning blue. You rush to help.',vitals:[{l:'Airway',v:'BLOCKED',s:'critical'},{l:'Oxygen',v:'DROPPING',s:'critical'}]},
+        q:'Where do you position your hands for the Heimlich maneuver on an adult?',
+        answers:['Right in the middle of the chest over the sternum, using both palms flat','Just above where the belly button is, tucked below where the ribs meet','Squarely on the lower back, pressing inward toward the spine with both hands','On top of the shoulders, gripping firmly to pull upward and back'],
+        correct:1, step:2,
+        fact:'Hands go just ABOVE the navel, BELOW the ribcage. Make a fist, cover with other hand. Deliver firm upward thrusts. The goal is to create a burst of air to eject the object.'
+      },
+      { phase:'INFANT PROTOCOL', phaseColor:'var(--orange)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'👶', title:'Different for Infants!', desc:'Understanding the difference for infants under 1 year old is critical — Heimlich can cause internal damage.',vitals:[{l:'Patient',v:'INFANT (<1yr)',s:'warning'}]},
+        q:'For a choking infant under 1 year, what do you use instead of the Heimlich?',
+        answers:['A scaled-down version of the Heimlich using just two fingers on the abdomen','Alternating between firm strikes on the back and pushes on the chest — five of each','Gently sweeping a finger around inside the mouth to dislodge whatever you can find','Picking up the infant and shaking them gently in a downward motion to clear the airway'],
+        correct:1, step:2,
+        fact:'NEVER do Heimlich on infants! Use 5 back blows (heel of hand between shoulder blades) then 5 chest thrusts. Alternate until object is expelled or infant becomes unresponsive.'
+      },
+      { phase:'UNCONSCIOUS', phaseColor:'var(--red)', type:'CRITICAL DECISION',
+        scene:{emoji:'😵', title:'She Goes Unconscious', desc:'After 3 Heimlich maneuvers, the girl loses consciousness and collapses. The object is still lodged.',vitals:[{l:'Consciousness',v:'UNCONSCIOUS',s:'critical'},{l:'Airway',v:'STILL BLOCKED',s:'critical'}]},
+        q:'The child is now unconscious from choking. What do you do?',
+        answers:['Continue doing abdominal thrusts even though she\'s on the ground — don\'t stop now','Carefully lower her, get someone to call 911, start CPR, and look in the mouth before giving breaths','Focus only on blowing air into her lungs repeatedly until something moves','Stay calm and keep her still until the ambulance arrives — moving her could make it worse'],
+        correct:1, step:3,
+        fact:'Lower gently to the ground, call 911 (or have someone call), start CPR. Before giving rescue breaths, LOOK in the mouth. If you can SEE the object, remove it. Never do blind finger sweeps!'
+      },
+      { phase:'PREVENTION', phaseColor:'var(--green)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'✅', title:'Object Expelled!', desc:'After compressions, the food dislodges and she starts breathing. Paramedics are 2 minutes away.',vitals:[{l:'Breathing',v:'RESTORED',s:'ok'},{l:'Consciousness',v:'ALERT',s:'ok'}]},
+        q:'After successfully removing a choking obstruction, what should happen next?',
+        answers:['Offer her some water to drink and let her calm down before finishing her meal','She should be checked over by medical staff even though she seems completely fine now','There\'s nothing further to do — if she\'s breathing and talking normally, she\'s in the clear','Have her practice some slow swallowing exercises to make sure the airway is fully clear'],
+        correct:1, step:4,
+        fact:'Even after successful choking relief, the patient MUST be seen by medical staff. The Heimlich can cause internal injuries (rib fractures, organ damage), and the original cause needs evaluation.'
+      }
+    ]
+  },
+  {
+    id:'burns',
+    name:'Burn Emergency',
+    emoji:'🔥',
+    desc:'A kitchen fire causes severe burns. What do you do first?',
+    accent:'#ff6b00',
+    sceneA:'#3a1000', sceneB:'#200800',
+    difficulty:'Medium', diffColor:'var(--orange)',
+    steps:['Stop the burning','Cool the burn','Cover the burn','Assess severity','Call 911 if severe','Monitor for shock'],
+    questions:[
+      { phase:'IMMEDIATE ACTION', phaseColor:'var(--red)', type:'CRITICAL DECISION',
+        scene:{emoji:'🔥', title:'Kitchen Fire Burn', desc:'Your friend\'s sleeve catches fire while cooking. He\'s panicking with flames on his arm.',vitals:[{l:'Fire',v:'ACTIVE',s:'critical'},{l:'Burns',v:'ONGOING',s:'critical'}]},
+        q:'Flames are on the person\'s clothing. What do you do first?',
+        answers:['Immediately pour or run cold water over the flames to douse them as fast as possible','Get them to stop moving, drop to the ground, and roll — or smother the flames with a heavy blanket','Call emergency services right away so trained responders can handle it properly','Pull the burning clothes away from their body as quickly as you can to remove the heat source'],
+        correct:1, step:0,
+        fact:'STOP the burning first! Stop, Drop, Roll or smother with a wool/cotton blanket. Removing burning clothing can tear burned skin. Never use synthetic blankets — they melt!'
+      },
+      { phase:'COOLING', phaseColor:'var(--teal)', type:'TECHNIQUE CHECK',
+        scene:{emoji:'🌊', title:'Cool The Burn', desc:'Flames are out. He has a significant burn on his forearm. It\'s blistered and very painful.',vitals:[{l:'Fire',v:'EXTINGUISHED',s:'ok'},{l:'Burn',v:'BLISTERED',s:'warning'}]},
+        q:'How do you properly cool a burn?',
+        answers:['Hold a bag of ice or ice pack directly against the burned skin for around 10 minutes','Let cool — not icy cold — water flow gently over the burned area for a full 20 minutes','Spread something thick like butter or toothpaste over it to create a soothing barrier','Wrap the area snugly in a clean dry cloth right away to protect it from further exposure'],
+        correct:1, step:1,
+        fact:'Cool running water for 20 minutes. NOT ice — it causes frostbite and worsens tissue damage. NOT butter/toothpaste/oils — these trap heat and cause infection. Cool water only!'
+      },
+      { phase:'ASSESSMENT', phaseColor:'var(--yellow)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'🔍', title:'Assess Burn Severity', desc:'After cooling, you need to determine how serious this burn is to decide if 911 is needed.',vitals:[{l:'Area',v:'FOREARM',s:'warning'},{l:'Appearance',v:'BLISTERED',s:'warning'}]},
+        q:'A blistered burn with redness and pain, but intact skin is classified as:',
+        answers:['First degree — a surface-level injury affecting only the very outermost layer of skin','Second degree — a partial thickness burn reaching deeper into the skin layers','Third degree — a full thickness burn destroying all layers including nerves underneath','Fourth degree — the most severe category, involving muscle and bone beneath the skin'],
+        correct:1, step:3,
+        fact:'2nd degree burns blister, are intensely painful, red/wet-looking. 1st degree = redness/pain only (like sunburn). 3rd degree = white/charred, often painless because nerve endings are destroyed.'
+      },
+      { phase:'WHEN TO CALL 911', phaseColor:'var(--red)', type:'CRITICAL DECISION',
+        scene:{emoji:'📞', title:'Call for Help?', desc:'The burn covers most of his forearm (about 9% body surface). He\'s in significant pain.',vitals:[{l:'Burn Size',v:'~9% BSA',s:'warning'},{l:'Pain',v:'SEVERE',s:'warning'}]},
+        q:'Which burn situation requires calling 911 IMMEDIATELY?',
+        answers:['A minor first degree burn on the forearm from briefly touching something hot','Any burn located on the face, hands, feet, or other sensitive areas regardless of how small it looks','Mild redness on the shoulders after a long day outside without sunscreen','A burn that is smaller than the size of your hand and doesn\'t appear to be blistering yet'],
+        correct:1, step:4,
+        fact:'Always call 911 for: face/hands/feet/genitals/joints burns, burns larger than 3 inches or 10% BSA, chemical/electrical burns, burns with inhalation injury, burns on elderly/children.'
+      },
+      { phase:'SHOCK WATCH', phaseColor:'var(--orange)', type:'ASSESSMENT',
+        scene:{emoji:'😰', title:'Watching for Shock', desc:'EMS is 8 minutes away. He\'s becoming pale and seems confused. Burns can cause life-threatening shock.',vitals:[{l:'Skin',v:'PALE/CLAMMY',s:'critical'},{l:'Mental State',v:'CONFUSED',s:'warning'}]},
+        q:'Signs of shock include pale/clammy skin and confusion. What should you do?',
+        answers:['Give him small amounts of water to replace fluids he\'s losing from the burn injury','Lay him on his back and raise his legs off the ground while keeping him warm and calm','Continue applying cool water to the burn area since shock is just an extension of the burn','Prop him into a seated position and have him lean slightly forward to help his breathing'],
+        correct:1, step:5,
+        fact:'Treat for shock: lay flat, elevate legs 12 inches (unless spinal injury suspected), keep warm with a blanket. Do NOT give fluids orally if patient may need surgery. Keep reassuring them!'
+      }
+    ]
+  },
+  {
+    id:'stroke',
+    name:'Stroke Response',
+    emoji:'🧠',
+    desc:'Someone is showing strange symptoms. Is it a stroke?',
+    accent:'#5ac8fa',
+    sceneA:'#001a3a', sceneB:'#000d20',
+    difficulty:'Hard', diffColor:'var(--red)',
+    steps:['Recognize stroke signs (FAST)','Call 911 immediately','Note time of symptom onset','Keep patient calm','Do NOT give food or water','Prepare for EMS arrival'],
+    questions:[
+      { phase:'RECOGNITION', phaseColor:'var(--teal)', type:'ASSESSMENT',
+        scene:{emoji:'😵', title:'Something\'s Wrong', desc:'Your 62-year-old neighbor suddenly slumps in her chair, her face looks droopy on one side, and her speech is slurred.',vitals:[{l:'Speech',v:'SLURRED',s:'critical'},{l:'Face',v:'DROOPING',s:'critical'},{l:'Arm',v:'WEAK',s:'warning'}]},
+        q:'What does the acronym FAST stand for in stroke recognition?',
+        answers:['First Aid Stroke Treatment — the four-step protocol taught in basic life support courses','Face drooping, Arms weak, Speech slurred, Time to call for help','Fast Action Saves Time — a reminder that speed is the single most important factor','Facial Asymmetry, Sensation loss, Tachycardia — the three primary clinical indicators'],
+        correct:1, step:0,
+        fact:'FAST: Face drooping (ask to smile), Arms weak (ask to raise both), Speech slurred (repeat a simple sentence), Time to call 911. If ANY one sign = possible stroke. ACT FAST!'
+      },
+      { phase:'CALL 911', phaseColor:'var(--red)', type:'CRITICAL DECISION',
+        scene:{emoji:'⏱️', title:'Time Is Brain', desc:'She passes the FAST test on 2 of 3 signs. She says she\'s probably fine and just tired.',vitals:[{l:'Symptoms',v:'2 FAST SIGNS',s:'critical'},{l:'Time',v:'UNKNOWN',s:'warning'}]},
+        q:'She insists she\'s fine. What do you do?',
+        answers:['Honor what she\'s telling you and check back in half an hour to see if anything has changed','Load her into your car and drive directly to the nearest emergency room yourself','Pick up the phone and call 911 right away, regardless of whether she wants you to or not','Give her a couple of aspirin and some water, then monitor her for the next few hours'],
+        correct:2, step:1,
+        fact:'Call 911 immediately. In a stroke, "time is brain" — 1.9 MILLION neurons die every minute! EMS can alert the hospital to prepare, and ambulances have stroke protocols. Driving yourself delays critical treatment.'
+      },
+      { phase:'TIME IS CRITICAL', phaseColor:'var(--yellow)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'⏰', title:'Treatment Window', desc:'EMS is on the way. You\'re asking her questions to help doctors later.',vitals:[{l:'Onset',v:'UNKNOWN',s:'warning'},{l:'EMS ETA',v:'4 MIN',s:'ok'}]},
+        q:'Why is knowing the EXACT TIME symptoms started so important?',
+        answers:['Hospital intake forms require it, and missing that field can delay the admission process','The main clot-dissolving medication has a narrow window and can\'t be used if onset time isn\'t known','Different hospitals have different protocols, and the time determines where she gets transported','It affects how the ambulance company bills the insurance, which impacts her coverage options'],
+        correct:1, step:2,
+        fact:'tPA (tissue plasminogen activator) is the main stroke treatment — it dissolves clots. But it MUST be given within 4.5 hours of symptom onset and can\'t be used if onset time is unknown. Always note the time!'
+      },
+      { phase:'DO\'S AND DON\'TS', phaseColor:'var(--orange)', type:'TECHNIQUE CHECK',
+        scene:{emoji:'🚫', title:'What NOT To Do', desc:'While waiting for EMS, she\'s thirsty and asks for water. She seems more confused now.',vitals:[{l:'Swallowing',v:'MAY BE IMPAIRED',s:'warning'},{l:'Confusion',v:'INCREASING',s:'critical'}]},
+        q:'She asks for water. What do you do?',
+        answers:['Pour just a small sip into her mouth carefully since hydration helps brain function during a stroke','Use a straw so she can control the flow herself and reduce the risk of any spillage','Don\'t give her anything to eat or drink — her ability to swallow safely may be compromised','Give her aspirin along with water since thinning the blood is the priority right now'],
+        correct:2, step:4,
+        fact:'NO food or water! Strokes often impair swallowing (dysphagia) — she could choke or aspirate. Also, no aspirin — if it\'s a hemorrhagic (bleeding) stroke, aspirin makes it MUCH worse. EMS will handle fluids.'
+      },
+      { phase:'TYPES OF STROKE', phaseColor:'var(--purple', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'🧠', title:'Know Your Strokes', desc:'EMS is asking questions. Understanding stroke types helps everyone make better decisions.',vitals:[{l:'EMS',v:'ARRIVED',s:'ok'}]},
+        q:'What are the two main types of stroke?',
+        answers:['Rapid onset and gradual onset — distinguished by how quickly symptoms appear and progress','Ischemic — caused by a blocked blood vessel, and hemorrhagic — caused by a burst blood vessel','Minor strokes affecting small areas, and major strokes affecting large regions of the brain','Arterial strokes affecting oxygen delivery and venous strokes affecting blood drainage'],
+        correct:1, step:0,
+        fact:'87% of strokes are ischemic (blocked artery — give tPA). 13% are hemorrhagic (burst vessel — tPA would be FATAL). This is why CT scans happen immediately — treatments are completely opposite!'
+      },
+      { phase:'TIA WARNING', phaseColor:'var(--green)', type:'CRITICAL DECISION',
+        scene:{emoji:'⚠️', title:'Symptoms Resolve?', desc:'Suddenly her symptoms seem to disappear completely. She feels normal and refuses to go to the hospital.',vitals:[{l:'Symptoms',v:'RESOLVING',s:'warning'},{l:'Attitude',v:'REFUSING CARE',s:'warning'}]},
+        q:'Her symptoms vanish after 15 minutes. She says she\'s fine now. What is this likely?',
+        answers:['A false alarm — if symptoms fully go away on their own, there was probably no real event','A transient ischemic attack, which resolves on its own but is still a serious medical warning sign','She was probably just overtired or dehydrated, and rest was genuinely all she needed','Low blood sugar mimicking neurological symptoms — offer something sweet and see if she improves'],
+        correct:1, step:5,
+        fact:'A TIA (Transient Ischemic Attack) is a MAJOR warning sign — 1 in 10 TIA patients has a full stroke within 3 months, often within 48 hours. This is a medical emergency even though symptoms resolved!'
+      }
+    ]
+  },
+  {
+    id:'bleeding',
+    name:'Severe Bleeding',
+    emoji:'🩸',
+    desc:'A construction accident causes life-threatening blood loss.',
+    accent:'#ff2d55',
+    sceneA:'#2a0010', sceneB:'#150008',
+    difficulty:'Easy', diffColor:'var(--green)',
+    steps:['Ensure scene safety','Apply direct pressure','Elevate if possible','Use tourniquet if needed','Call 911','Monitor for shock'],
+    questions:[
+      { phase:'SCENE SAFETY', phaseColor:'var(--teal)', type:'ASSESSMENT',
+        scene:{emoji:'🔨', title:'Construction Site Accident', desc:'A worker\'s hand was cut badly by a power saw. Blood is gushing rapidly.',vitals:[{l:'Bleeding',v:'ARTERIAL',s:'critical'},{l:'Skin Color',v:'PALE',s:'warning'}]},
+        q:'Before helping with severe bleeding, what should you put on if available?',
+        answers:['Don\'t waste any time looking for protection — start applying pressure immediately with bare hands','Some kind of protective gloves to reduce your exposure to blood and potential bloodborne illness','A face covering or mask since blood can sometimes spray and reach your face or eyes','Eye protection only, since the main risk with blood is splash injury to the eyes'],
+        correct:1, step:0,
+        fact:'Gloves first if available! Bloodborne pathogens (HIV, Hepatitis B/C) are real risks. If no gloves: use a plastic bag, extra clothing layers, or have the victim apply pressure themselves. Your safety matters too.'
+      },
+      { phase:'STOP THE BLEED', phaseColor:'var(--red)', type:'TECHNIQUE CHECK',
+        scene:{emoji:'🤲', title:'Apply Pressure NOW', desc:'You have gloves on. The bleeding is severe — blood is soaking through rapidly.',vitals:[{l:'Blood Loss',v:'SEVERE',s:'critical'},{l:'BP',v:'DROPPING',s:'critical'}]},
+        q:'What is the FIRST and MOST effective method to control severe bleeding?',
+        answers:['Apply a tourniquet straight away since it\'s the most powerful tool available for any serious wound','Raise the injured limb as high as possible above the heart and hold it there firmly','Press down hard and continuously on the wound with whatever cloth material is available','Find the nearest major artery and apply indirect pressure there to reduce blood flow'],
+        correct:2, step:1,
+        fact:'Direct pressure is first-line for ALL bleeding. Use the thickest material available, press HARD, and DON\'T lift to check — this disrupts clot formation. If blood soaks through, ADD MORE material on top!'
+      },
+      { phase:'TOURNIQUET USE', phaseColor:'var(--red)', type:'KNOWLEDGE CHECK',
+        scene:{emoji:'🩹', title:'When to Tourniquet', desc:'After 5 minutes of direct pressure, bleeding is slowing but not stopped. The wound is on his forearm.',vitals:[{l:'Bleeding',v:'PARTIALLY CONTROLLED',s:'warning'},{l:'Time Elapsed',v:'5 MIN',s:'warning'}]},
+        q:'When is a tourniquet appropriate for limb bleeding?',
+        answers:['Anytime there\'s any visible cut on an arm or leg — it\'s always better to be safe with tourniquets','When you\'ve already tried sustained direct pressure and the bleeding on a limb is still life-threatening','Only medical professionals with formal training are permitted to apply tourniquets in the field','As the very first step before anything else, since it\'s more effective than pressure alone'],
+        correct:1, step:3,
+        fact:'Tourniquets are for life-threatening limb bleeding when pressure fails. Apply 2–3 inches above the wound, tighten until bleeding stops, NOTE THE TIME. Modern evidence: tourniquets save lives and are safe for hours.'
+      },
+      { phase:'TOURNIQUET TECHNIQUE', phaseColor:'var(--orange)', type:'PROCEDURE CHECK',
+        scene:{emoji:'🔴', title:'Applying a Tourniquet', desc:'Direct pressure isn\'t fully controlling this. You decide a tourniquet is needed on his forearm.',vitals:[{l:'Decision',v:'TOURNIQUET NEEDED',s:'warning'},{l:'Time',v:'CRITICAL',s:'critical'}]},
+        q:'After applying a tourniquet, what is CRUCIAL to write down?',
+        answers:['Your full name and any certifications you have, in case there are legal questions later','The exact time you put the tourniquet on, so surgeons know how long it\'s been applied','The patient\'s blood type if you can find out, since surgeons will need it for transfusions','Your estimate of total blood loss so the hospital can prepare the right amount of fluids'],
+        correct:1, step:3,
+        fact:'TIME is critical! Write the time on the tourniquet or the patient\'s forehead with a marker. Surgeons need this — tourniquets cause tissue damage if left too long. "TK 14:23" written on skin saves limbs.'
+      },
+      { phase:'SHOCK RECOGNITION', phaseColor:'var(--orange)', type:'ASSESSMENT',
+        scene:{emoji:'😰', title:'Hemorrhagic Shock', desc:'EMS is 5 minutes away. The worker is becoming agitated, then very quiet. His skin is cold and clammy.',vitals:[{l:'Pulse',v:'RAPID/WEAK',s:'critical'},{l:'Skin',v:'PALE/COLD/CLAMMY',s:'critical'},{l:'Mental State',v:'CONFUSED',s:'warning'}]},
+        q:'These symptoms indicate hemorrhagic shock. What is the BEST position for this patient?',
+        answers:['Prop him up into a seated position so his airway stays open and he can breathe more comfortably','Roll him gently onto his stomach so blood pools away from the wound and reduces pressure','Keep him flat on his back and raise his legs off the ground to help blood flow toward his vital organs','Place him on his side in a recovery position since that\'s the safest default for any unconscious patient'],
+        correct:2, step:5,
+        fact:'Shock position: flat on back, legs raised 12 inches to redirect blood to vital organs. Keep warm with blankets. Do NOT raise legs if you suspect spinal injury, broken legs, or breathing difficulty.'
+      }
+    ]
+  }
+];
+
+// ══════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════
+let currentScenario = null;
+let currentQIdx = 0;
+let score = 0;
+let lives = 3;
+let answers = [];
+let timerInterval = null;
+let timeLeft = 0;
+let timePerQ = 20;
+let answeredCurrentQ = false;
+let streak = 0;
+let bestStreak = 0;
+let totalTime = 0;
+let questionTimes = [];
+let qStartTime = 0;
+
+function showIntro() { setScreen('intro'); }
+
+function showScenarioSelect() {
+  renderScenarios();
+  setScreen('scenario-select');
+}
+
+function setScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderScenarios() {
+  const grid = document.getElementById('scenarios-grid');
+  grid.innerHTML = '';
+  SCENARIOS.forEach(sc => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    card.style.setProperty('--accent', sc.accent);
+    card.innerHTML = `
+      <span class="sc-emoji">${sc.emoji}</span>
+      <div class="sc-name">${sc.name}</div>
+      <div class="sc-desc">${sc.desc}</div>
+      <div class="sc-difficulty" style="color:${sc.diffColor}">⚡ ${sc.difficulty}</div>
+    `;
+    card.onclick = () => startScenario(sc);
+    grid.appendChild(card);
+  });
+}
+
+function startScenario(sc) {
+  currentScenario = sc;
+  currentQIdx = 0;
+  score = 0;
+  lives = 3;
+  answers = [];
+  streak = 0;
+  bestStreak = 0;
+  totalTime = 0;
+  questionTimes = [];
+
+  document.getElementById('hud-scenario').textContent = sc.emoji + ' ' + sc.name.toUpperCase();
+  document.getElementById('hud-score').textContent = '0';
+  renderLives();
+
+  // Build progress dots
+  const dots = document.getElementById('progress-dots');
+  dots.innerHTML = sc.questions.map((_, i) => `<div class="prog-dot" id="dot-${i}"></div>`).join('');
+  // Mark current
+  document.getElementById('dot-0').classList.add('current');
+
+  setScreen('game');
+  loadQuestion();
+}
+
+function renderLives() {
+  const el = document.getElementById('hud-lives');
+  el.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    el.innerHTML += i < lives ? '❤️' : '🖤';
+  }
+}
+
+function loadQuestion() {
+  if (!currentScenario) return;
+  const q = currentScenario.questions[currentQIdx];
+  answeredCurrentQ = false;
+  qStartTime = Date.now();
+
+  // Phase badge
+  document.getElementById('phase-label').textContent = q.phase;
+  document.getElementById('phase-dot').style.setProperty('--dot-color', q.phaseColor);
+
+  // Scene
+  const sc = q.scene;
+  const sceneCard = document.getElementById('scene-card');
+  sceneCard.style.setProperty('--scene-a', currentScenario.sceneA);
+  sceneCard.style.setProperty('--scene-b', currentScenario.sceneB);
+  document.getElementById('scene-emoji').textContent = sc.emoji;
+  document.getElementById('scene-title').textContent = sc.title;
+  document.getElementById('scene-desc').textContent = sc.desc;
+
+  // Vitals
+  const vitals = document.getElementById('vital-signs');
+  vitals.innerHTML = (sc.vitals || []).map(v => `
+    <div class="vital">
+      <div class="vital-label">${v.l}</div>
+      <div class="vital-val ${v.s}">${v.v}</div>
+    </div>
+  `).join('');
+
+  // Procedure steps
+  const steps = document.getElementById('procedure-steps');
+  steps.innerHTML = currentScenario.steps.map((s, i) => {
+    let cls = 'pending';
+    if (i < q.step) cls = 'done';
+    else if (i === q.step) cls = 'active';
+    return `<div class="step-item ${cls}">
+      <div class="step-num">${i < q.step ? '✓' : i+1}</div>
+      <span>${s}</span>
+    </div>`;
+  }).join('');
+
+  // Question
+  document.getElementById('q-type-tag').textContent = q.type;
+  document.getElementById('q-type-tag').style.color = q.phaseColor;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-hint').textContent = '';
+
+  // Answers
+  const col = document.getElementById('answers-col');
+  col.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  const order = shuffle([0,1,2,3].slice(0, q.answers.length));
+  order.forEach((origIdx, displayIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.dataset.origIdx = origIdx;
+    btn.innerHTML = `<span class="ans-letter">${letters[displayIdx]}</span>${q.answers[origIdx]}`;
+    btn.onclick = () => selectAnswer(origIdx, btn, q);
+    col.appendChild(btn);
+  });
+
+  // Feedback & next
+  const fb = document.getElementById('feedback-box');
+  fb.classList.remove('show','fb-correct','fb-wrong');
+  const nb = document.getElementById('next-btn');
+  nb.classList.remove('show');
+
+  // Timer
+  startTimer(timePerQ);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  timeLeft = seconds;
+  updateTimerUI();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!answeredCurrentQ) timeUp();
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const fill = document.getElementById('timer-fill');
+  const pct = (timeLeft / timePerQ) * 100;
+  fill.style.width = pct + '%';
+  if (pct < 30) fill.classList.add('urgent');
+  else fill.classList.remove('urgent');
+}
+
+function timeUp() {
+  if (answeredCurrentQ) return;
+  answeredCurrentQ = true;
+  clearInterval(timerInterval);
+
+  const q = currentScenario.questions[currentQIdx];
+  // Disable all
+  document.querySelectorAll('.ans-btn').forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.dataset.origIdx) === q.correct) b.classList.add('reveal-correct');
+  });
+
+  lives = Math.max(0, lives - 1);
+  streak = 0;
+  renderLives();
+  showFeedback(false, `⏱️ Time's up! ${q.fact}`, q);
+  answers.push({ q: q.q, part: q.phase, correct: false, correctAnswer: q.answers[q.correct] });
+  questionTimes.push(timePerQ);
+  flashOverlay(false);
+  showXP(-50);
+}
+
+function selectAnswer(idx, btn, q) {
+  if (answeredCurrentQ) return;
+  answeredCurrentQ = true;
+  clearInterval(timerInterval);
+
+  const elapsed = Math.round((Date.now() - qStartTime) / 1000);
+  questionTimes.push(elapsed);
+
+  const isCorrect = idx === q.correct;
+
+  // Style buttons
+  document.querySelectorAll('.ans-btn').forEach(b => {
+    b.disabled = true;
+    const oi = parseInt(b.dataset.origIdx);
+    if (oi === q.correct) b.classList.add(isCorrect ? 'selected-correct' : 'reveal-correct');
+    if (oi === idx && !isCorrect) b.classList.add('selected-wrong');
+  });
+
+  if (isCorrect) {
+    const timeBonus = Math.max(0, Math.round((timeLeft / timePerQ) * 100));
+    const pts = 100 + timeBonus + (streak * 20);
+    score += pts;
+    streak++;
+    bestStreak = Math.max(bestStreak, streak);
+    document.getElementById('hud-score').textContent = score;
+    showFeedback(true, `✅ ${q.fact}`, q);
+    answers.push({ q: q.q, part: q.phase, correct: true, correctAnswer: q.answers[q.correct] });
+    flashOverlay(true);
+    showXP('+' + pts);
+  } else {
+    lives = Math.max(0, lives - 1);
+    streak = 0;
+    renderLives();
+    showFeedback(false, `❌ Correct: ${q.answers[q.correct]}. ${q.fact}`, q);
+    answers.push({ q: q.q, part: q.phase, correct: false, correctAnswer: q.answers[q.correct], chosen: q.answers[idx] });
+    flashOverlay(false);
+    showXP('-50');
+    score = Math.max(0, score - 50);
+    document.getElementById('hud-score').textContent = score;
+  }
+
+  // Update progress dot
+  const dot = document.getElementById('dot-' + currentQIdx);
+  if (dot) {
+    dot.classList.remove('current');
+    dot.classList.add(isCorrect ? 'done-correct' : 'done-wrong');
+  }
+  const nextDot = document.getElementById('dot-' + (currentQIdx + 1));
+  if (nextDot) nextDot.classList.add('current');
+
+  document.getElementById('next-btn').classList.add('show');
+  const isLast = currentQIdx >= currentScenario.questions.length - 1;
+  document.getElementById('next-btn').textContent = isLast ? 'SEE RESULTS 🏆' : 'NEXT STEP →';
+}
+
+function showFeedback(correct, text, q) {
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box show ' + (correct ? 'fb-correct' : 'fb-wrong');
+  fb.textContent = text;
+}
+
+function nextQuestion() {
+  currentQIdx++;
+  if (currentQIdx >= currentScenario.questions.length || lives <= 0) {
+    showResults();
+  } else {
+    loadQuestion();
+  }
+}
+
+function showResults() {
+  clearInterval(timerInterval);
+  const total = currentScenario.questions.length;
+  const correct = answers.filter(a => a.correct).length;
+  const ratio = correct / total;
+  const avgTime = questionTimes.length ? Math.round(questionTimes.reduce((a,b) => a+b, 0) / questionTimes.length) : 0;
+
+  let emoji, grade, sub;
+  if (ratio >= 0.9) { emoji='🏆'; grade='HERO RESPONDER'; sub='Outstanding! You could save lives for real.'; }
+  else if (ratio >= 0.7) { emoji='🚑'; grade='SOLID RESPONDER'; sub='Good work! Review the misses and you\'ll be ready.'; }
+  else if (ratio >= 0.5) { emoji='📚'; grade='LEARNING RESPONDER'; sub='Keep studying — these skills take practice.'; }
+  else { emoji='🔄'; grade='NEEDS PRACTICE'; sub='Don\'t give up! Try again with fresh focus.'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('result-sub').textContent = sub;
+  document.getElementById('rs-score').textContent = score;
+  document.getElementById('rs-correct').textContent = correct + '/' + total;
+  document.getElementById('rs-time').textContent = avgTime + 's';
+  document.getElementById('rs-streak').textContent = bestStreak + '🔥';
+
+  const list = document.getElementById('review-list');
+  list.innerHTML = answers.map(a => `
+    <div class="rv-item">
+      <span class="rv-icon">${a.correct ? '✅' : '❌'}</span>
+      <div>
+        <div class="rv-q">${a.q}</div>
+        <div class="rv-a ${a.correct ? 'correct' : 'wrong'}">
+          ${a.correct ? 'Correct!' : `You picked wrong → Answer: ${a.correctAnswer}`}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  setScreen('results');
+  if (ratio >= 0.8) spawnConfetti();
+}
+
+// ── HELPERS ──
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function flashOverlay(correct) {
+  const el = document.getElementById('flash-overlay');
+  el.className = correct ? 'flash-green' : 'flash-red';
+  el.style.opacity = '1';
+  setTimeout(() => el.style.opacity = '0', 300);
+}
+
+function showXP(text) {
+  const el = document.createElement('div');
+  el.className = 'xp-popup ' + (String(text).startsWith('+') ? 'pos' : 'neg');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function spawnConfetti() {
+  const colors = ['#ff2d55','#ffd60a','#30d158','#0a84ff','#5ac8fa','#ff9500'];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement('div');
+    const size = 6 + Math.random() * 8;
+    c.style.cssText = `
+      position:fixed; width:${size}px; height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      left:${Math.random()*100}vw; top:-20px;
+      pointer-events:none; z-index:9999;
+      animation:confetti-fall ${1.5+Math.random()*2}s ${Math.random()*0.8}s ease-in forwards;
+    `;
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
+// Confetti animation
+const confettiStyle = document.createElement('style');
+confettiStyle.textContent = `@keyframes confetti-fall { to { transform:translateY(110vh) rotate(720deg); opacity:0; } }`;
+document.head.appendChild(confettiStyle);
+
+// Stars
+function createStars() {
+  const sf = document.getElementById('stars');
+  if (!sf) return;
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;width:${1+Math.random()*3}px;height:${1+Math.random()*3}px;`;
+    sf.appendChild(s);
+  }
+}
+createStars();
+</script>
+</body>
+</html>
